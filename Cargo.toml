@@ -1,0 +1,3 @@
+[workspace]
+members = ["emctl-cli", "emctl-core"]
+resolver = "2"
