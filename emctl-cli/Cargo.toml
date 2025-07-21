@@ -3,6 +3,10 @@ name = "emctl-cli"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "emctl"
+path = "src/main.rs"
+
 [dependencies]
 clap = { version = "4.5.41", features = ["derive"] }
 emctl-core = { path = "../emctl-core" }

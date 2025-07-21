@@ -1,8 +1,12 @@
+mod args;
+use clap::Parser;
 use emctl_core;
 
 fn main() {
-    println!(
-        "Hello, world! This is server version: {}",
-        emctl_core::SERVER_VERSION
-    );
+    let cli = args::Args::parse();
+    match cli.cmd {
+        _ => {
+            println!("Unknown command: {:?}", cli.cmd);
+        }
+    }
 }
