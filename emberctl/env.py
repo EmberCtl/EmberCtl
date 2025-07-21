@@ -4,9 +4,10 @@ from loguru import logger
 import sys
 
 SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
-LOG_DIR = "data/logs"
+IS_DEV = True if "-d" in sys.argv or "--dev" in sys.argv else False
+DATA_PATH = "data" if IS_DEV else "/opt/emberctl/data"
+LOG_DIR = DATA_PATH + "/logs"
 LOG_FILE = f"{LOG_DIR}/emberctl.log"
-
 
 os.makedirs(LOG_DIR, exist_ok=True)
 
