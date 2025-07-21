@@ -1,11 +1,13 @@
-#
 import click
 import uvicorn
 import multiprocessing
+import emberctl.env
+from loguru import logger
 
 
 @click.group()
 def cli():
+    logger.info("Starting emberctl")
     pass
 
 
