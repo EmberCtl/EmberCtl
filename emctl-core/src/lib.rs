@@ -1,4 +1,5 @@
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+mod db;
 
 // 定义一个简单的路由处理函数
 async fn hello() -> impl Responder {
@@ -11,6 +12,7 @@ async fn echo(req_body: String) -> impl Responder {
 }
 
 pub async fn run_server() -> std::io::Result<()> {
+    db::init_db().await.unwrap();
     HttpServer::new(|| {
         // 直接在闭包中创建 App 实例
         App::new()
