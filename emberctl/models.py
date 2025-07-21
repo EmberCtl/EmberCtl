@@ -1,9 +1,29 @@
 from tortoise.models import Model
 from tortoise import fields
+import orjson
+
+
+class StrJSONField(fields.TextField):  # 将 CharField 改为 TextField
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def to_python_value(self, value):
+        try:
+            return orjson.loads(value)  # 尝试解析为 JSON
+        except orjson.JSONDecodeError:
+            return value
+
+    def to_db_value(self, value, instance):
+        # 如果值是字典或列表，转换为 JSON 字符串；否则直接存储
+        v = orjson.dumps(value)
+        if isinstance(v, bytes):
+            return v.decode("utf-8")
+        else:
+            return v
 
 
 class User(Model):
-    name = fields.CharField(max_length=255, pk=True)
+    name = fields.CharField(max_length=255, pk=True, unique=True, index=True)
     password = fields.CharField(max_length=255)
 
 
@@ -26,5 +46,5 @@ class OperationLog(Model):
 
 
 class Config(Model):
-    key = fields.CharField(max_length=255, pk=True)
-    value = fields.JSONField()
+    key = fields.CharField(max_length=255, pk=True, unique=True, index=True)
+    value = StrJSONField()

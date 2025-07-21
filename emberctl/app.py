@@ -1,13 +1,15 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from . import db
-import os
+from loguru import logger
+from .api import login_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs("data", exist_ok=True)
+    logger.info("Starting up")
     await db.init_db()
+    app.include_router(login_router)
     yield
     await db.Tortoise.close_connections()
 
