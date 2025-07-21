@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-actix-web = "4.11.0"
+actix-web = { workspace = true }
 sqlx = "0.8.6"
