@@ -143,23 +143,28 @@ EOF
 
 create_global_entrypoint() {
     local bin_path="/bin/emctl"
-    local project_dir="/opt/emberctl"
+    local project_dir="${INSTALL_BASE_DIR}/${PROJECT_DIR_NAME}"
 
-    log_info "正在配置全局命令入口：EmberCtl"
+    log_info "正在配置全局命令入口"
 
     tee "$bin_path" > /dev/null <<'EOF'
 #!/bin/bash
 set -e
 # 使用 uv 执行固定版本的 Python 运行 main.py，并传递所有参数
-uv run -p !PYTHON_VERSION! /opt/emberctl/main.py "$@"
+!UV_PATH! run -p !PYTHON_VERSION! --directory !PROJECT_PATH! !PROJECT_PATH!/main.py "$@"
 EOF
     # 替换 ${PYTHON_VERSION} 为实际的 Python 版本
-    sed -i "s|!PYTHON_VERSION!|!PYTHON_VERSION!|g" "$bin_path"
+    sed -i "s|!PYTHON_VERSION!|$PYTHON_VERSION|g" "$bin_path"
+    # 替换 ${UV_PATH}
+    sed -i "s|!UV_PATH!|$UV_BIN_PATH|g" "$bin_path"
+    # 替换 ${PROJECT_PATH}
+    sed -i "s|!PROJECT_PATH!|$project_dir|g" "$bin_path"
 
     chmod +x "$bin_path"
 
     log_info "全局命令已创建完成，你现在可以使用：emctl [command]"
 }
+
 
 
 # --- 主逻辑 ---
