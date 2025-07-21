@@ -23,3 +23,8 @@ class OperationLog(Model):
     ua = fields.TextField()  # 操作ua
     action = fields.CharField(max_length=255)  # 操作动作
     detail = fields.TextField()  # 操作详情
+
+
+class Config(Model):
+    key = fields.CharField(max_length=255, pk=True)
+    value = fields.JSONField()

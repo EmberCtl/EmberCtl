@@ -1,4 +1,5 @@
 from tortoise import Tortoise
+from models import *
 
 
 async def init_db():
@@ -7,3 +8,8 @@ async def init_db():
         modules={"models": ["emberctl.models"]},
     )
     await Tortoise.generate_schemas()
+
+
+async def init_settings():
+    if await Config.get_or_none(key="init") is None:
+        await Config.create(key="init", value=True)

@@ -5,9 +5,11 @@ description = "The Sun That Rises In Your Server."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiofiles>=24.1.0",
     "click>=8.2.1",
     "fastapi>=0.116.1",
     "orjson>=3.11.0",
+    "pyjwt>=2.10.1",
     "tortoise-orm>=0.25.1",
     "uvicorn>=0.35.0",
     "uvloop>=0.21.0",
