@@ -2,6 +2,9 @@ from tortoise import Tortoise
 from . import env
 from .models import *
 from loguru import logger
+from threading import Lock
+
+lock = Lock()
 
 
 async def init_db():
@@ -14,6 +17,7 @@ async def init_db():
 
 
 async def init_settings():
-    if await Config.get_or_none(key="init") is None:
-        logger.warning("Initializing settings")
-        await Config.create(key="init", value=True)
+    with lock:
+        if await Config.get_or_none(key="init") is None:
+            logger.warning("Initializing settings")
+            await Config.create(key="init", value=True)

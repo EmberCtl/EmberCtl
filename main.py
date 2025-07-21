@@ -19,7 +19,7 @@ def serve(dev):
     args = {
         "host": "0.0.0.0",
         "port": 8000,
-        "reload": dev,
+        "workers": 4,
     }
     if not dev:
         args["workers"] = 4
