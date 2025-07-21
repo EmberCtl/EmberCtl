@@ -25,6 +25,22 @@ check_command() { command -v "$1" &> /dev/null; }
 # root 权限判断
 is_sudo_user() { [[ "$EUID" -eq 0 ]]; }
 
+# 确认
+ask_yes_no() {
+    if [[ $AUTO_YES -eq 1 ]]; then
+        return 0
+    fi
+    read -r -p "$1 [y/N] " response
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 # --- 环境准备 ---
 
 check_system_dependencies() {
@@ -88,18 +104,30 @@ prepare_install_dir() {
     fi
 
     if [[ -d "$path" ]]; then
-        log_info "项目目录已存在，清空旧文件..."
-        rm -rf "$path"
+        if ask_yes_no "项目目录已存在，是否清空旧文件？"; then
+            rm -rf "$path"
+        else
+            log_info "项目目录已存在，将会直接更新"
+        fi
     fi
 }
 
 clone_project_to_target() {
     local path="$INSTALL_BASE_DIR/$PROJECT_DIR_NAME"
-    log_info "正在克隆项目到 $path..."
-    if git clone --branch "$PROJECT_TAG" --depth 1 "$PROJECT_REPO" "$path"; then
-        log_info "项目克隆完成，当前 tag: $PROJECT_TAG"
+    if [[ -d "$path" ]]; then
+        log_info "正在拉取项目最新代码..."
+        if cd "$path" && git pull && git checkout "$PROJECT_TAG"; then
+            log_info "项目代码已更新"
+        else
+            log_error "项目代码更新失败"
+        fi
     else
-        log_error "项目克隆失败"
+        log_info "正在克隆项目到 $path..."
+        if git clone --branch "$PROJECT_TAG" --depth 1 "$PROJECT_REPO" "$path"; then
+            log_info "项目克隆完成，当前 tag: $PROJECT_TAG"
+        else
+            log_error "项目克隆失败"
+        fi
     fi
 }
 
