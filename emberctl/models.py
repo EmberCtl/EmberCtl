@@ -39,10 +39,12 @@ class OperationLog(Model):
     user = fields.CharField(max_length=255)  # 操作用户
     time = fields.DatetimeField(auto_now_add=True)  # 操作时间
     module = fields.CharField(max_length=255)  # 操作模块
-    ip = fields.CharField(max_length=255)  # 操作ip
-    ua = fields.TextField()  # 操作ua
     action = fields.CharField(max_length=255)  # 操作动作
     detail = fields.TextField()  # 操作详情
+
+    @classmethod
+    async def log(cls, user, module, action, detail):
+        pass
 
 
 class Config(Model):

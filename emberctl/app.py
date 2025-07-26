@@ -7,8 +7,8 @@ from .api import login_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting up")
     await db.init_db()
+    await db.test_connection()
     app.include_router(login_router)
     yield
     await db.Tortoise.close_connections()
