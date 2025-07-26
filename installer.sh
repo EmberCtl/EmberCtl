@@ -226,12 +226,21 @@ MAIN() {
     # 8. 安装系统服务
     create_systemd_service
 
-    /bin/emctl init
-
+    # 9. 初始化数据库并保存密码输出
+    log_info "初始化数据库..."
+    local password_output
+    password_output=$(/bin/emctl init 2>&1)
+    local admin_password=$(echo "$password_output" | grep -o "Admin password: .*" | cut -d' ' -f3)
+    
     log_info "✅ $SCRIPT_NAME 成功完成"
     echo
     echo "安装路径: $INSTALL_BASE_DIR/$PROJECT_DIR_NAME"
-    echo "可执行项目入口示例: uv run -p python main.py"
+    echo
+    echo "管理员账号信息:"
+    echo "  用户名: admin"
+    echo "  密码: $admin_password"
+    echo
+    echo "请妥善保管此密码，您可以用它登录 EmberCtl 管理面板。"
 }
 
 trap 'log_error "脚本非正常退出，状态码 $?。请检查上文日志。"' ERR

@@ -30,5 +30,10 @@ def init():
     asyncio.run(emberctl.db.init_db())
 
 
+@cli.command()
+def reset_pwd():
+    asyncio.run(emberctl.db.reset_pwd())
+
+
 if __name__ == "__main__":
     cli()

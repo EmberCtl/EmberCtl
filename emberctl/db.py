@@ -29,19 +29,22 @@ async def init_settings():
         raise
 
 
-async def test_connection():
-    """
-    测试数据库连接和基础表格
-    """
+async def get_db(test=True):
     try:
-        await Tortoise.get_connection("default").execute_query("SELECT 1")
-        if not await Config.get_or_none(key="init"):
-            raise ValueError("Database not initialized")
-        logger.info("Database connection test successful")
-        return True
+        db_path = os.path.join(DATA_PATH, "db.sqlite3")
+        await Tortoise.init(
+            db_url=f"sqlite://{db_path}",
+            modules={"models": ["emberctl.schema"]},
+        )
+        logger.info("Database connection successful")
+        if test:
+            await Tortoise.get_connection("default").execute_query("SELECT 1")
+            if not await Config.get_or_none(key="init"):
+                raise ValueError("Database not initialized")
     except Exception as e:
+        logger.error(e)
+    finally:
         await Tortoise.close_connections()
-        raise
 
 
 async def init_db():
@@ -49,24 +52,28 @@ async def init_db():
     初始化数据库所有组件
     """
     try:
-        db_path = os.path.join(DATA_PATH, "db.sqlite3")
-        await Tortoise.init(
-            db_url=f"sqlite://{db_path}",
-            modules={"models": ["emberctl.schema"]},
-        )
-        logger.info("Successfully connected to database")
+        await get_db(False)
+        try:
+            if await Config.get_or_none(key="init"):
+                raise ValueError("Database already initialized")
+        except Exception:
+            pass
+
         await Tortoise.generate_schemas()
         logger.info("Database initialized successfully")
+
         password = secrets.token_urlsafe(12)
         admin = User(
             name="admin",
             password=hashlib.sha256(password.encode()).hexdigest(),
         )
         await OperationLog.log(
-            "system", "user", "create", f"Created auser: {admin.name}"
+            "system", "user", "create", f"Created user: {admin.name}"
         )
-        print(f"Admin password: {password}")
+        print(f"Generated admin password: {password}")
         await admin.save()
+
+        await init_settings()
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
         raise
@@ -74,13 +81,34 @@ async def init_db():
         await Tortoise.close_connections()
 
 
-async def close_db():
+async def reset_pwd():
     """
-    关闭数据库连接
+    重置管理员密码
     """
     try:
+        await get_db()
+
+        # 生成新的随机密码
+        new_password = secrets.token_urlsafe(12)
+        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+
+        # 获取管理员用户并更新密码
+        admin = await User.get(name="admin")
+        old_password = admin.password
+        admin.password = hashed_password
+        await admin.save()
+
+        # 记录操作日志
+        await OperationLog.log("system", "user", "update", "Reset admin password")
+
+        # 打印新密码
+        print(f"New admin password: {new_password}")
+        logger.info("Admin password reset successfully")
+
+        # 关闭数据库连接
         await Tortoise.close_connections()
-        logger.info("Database connections closed successfully")
+
+        return new_password
     except Exception as e:
-        logger.error(f"Error closing database connections: {e}")
+        logger.error(f"Failed to reset admin password: {e}")
         raise
