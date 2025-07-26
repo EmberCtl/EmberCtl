@@ -44,7 +44,8 @@ class OperationLog(Model):
 
     @classmethod
     async def log(cls, user, module, action, detail):
-        pass
+        c = await cls.create(user=user, module=module, action=action, detail=detail)
+        return c
 
 
 class Config(Model):

@@ -226,6 +226,8 @@ MAIN() {
     # 8. 安装系统服务
     create_systemd_service
 
+    /bin/emctl init
+
     log_info "✅ $SCRIPT_NAME 成功完成"
     echo
     echo "安装路径: $INSTALL_BASE_DIR/$PROJECT_DIR_NAME"

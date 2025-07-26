@@ -7,7 +7,10 @@ from loguru import logger
 
 
 @click.group()
-def cli():
+@click.option(
+    "-d", "--dev", is_flag=True, help="Run in development mode", default=False
+)
+def cli(dev):
     logger.info("Starting emberctl")
     pass
 

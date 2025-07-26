@@ -1,11 +1,13 @@
 from tortoise import Tortoise
-from .models import Config
+from .schema import Config, User, OperationLog, Website
 from .env import logger, DATA_PATH
 from threading import Lock
 import os
 import sys
+import secrets
+import hashlib
 
-_lock = Lock()
+dblock = Lock()
 
 
 async def init_settings():
@@ -13,7 +15,7 @@ async def init_settings():
     初始化或更新默认配置
     """
     try:
-        with _lock:
+        with dblock:
             config = await Config.get_or_none(key="init")
             if not config:
                 logger.info("Initializing database settings...")
@@ -50,15 +52,26 @@ async def init_db():
         db_path = os.path.join(DATA_PATH, "db.sqlite3")
         await Tortoise.init(
             db_url=f"sqlite://{db_path}",
-            modules={"models": ["emberctl.models"]},
+            modules={"models": ["emberctl.schema"]},
         )
         logger.info("Successfully connected to database")
         await Tortoise.generate_schemas()
         logger.info("Database initialized successfully")
+        password = secrets.token_urlsafe(12)
+        admin = User(
+            name="admin",
+            password=hashlib.sha256(password.encode()).hexdigest(),
+        )
+        await OperationLog.log(
+            "system", "user", "create", f"Created auser: {admin.name}"
+        )
+        print(f"Admin password: {password}")
+        await admin.save()
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
-        await Tortoise.close_connections()
         raise
+    finally:
+        await Tortoise.close_connections()
 
 
 async def close_db():
