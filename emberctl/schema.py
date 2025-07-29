@@ -51,3 +51,9 @@ class OperationLog(Model):
 class Config(Model):
     key = fields.CharField(max_length=255, pk=True, unique=True, index=True)
     value = StrJSONField()
+
+
+class LoginToken(Model):
+    user = fields.ForeignKeyField("models.User", related_name="login_tokens")
+    token = fields.CharField(max_length=255, pk=True, unique=True, index=True)
+    expire_at = fields.DatetimeField()
